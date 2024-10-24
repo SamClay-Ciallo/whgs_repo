@@ -17,12 +17,18 @@ def stock_price_collecting(code, datestart, dateend, period):
     return prices
 
 # Collect historical price data
-historical_price_data = stock_price_collecting("AAPL", "2023-01-01", "2024-01-01", "1d")
+historical_price_data = stock_price_collecting("AAPL", "2023-01-01", "2024-01-01", "1d") 
 historical_price_data = pd.DataFrame(historical_price_data)
 
 # Calculate moving averages
 historical_price_data['MA5'] = historical_price_data['Close'].rolling(window=minMperiod).mean()
 historical_price_data['MA10'] = historical_price_data['Close'].rolling(window=maxMAperiod).mean()
+
+# Calculate Bollinger Bands
+historical_price_data['20d_ma'] = historical_price_data['Close'].rolling(window=20).mean()
+historical_price_data['20d_std'] = historical_price_data['Close'].rolling(window=20).std()
+historical_price_data['upper_band'] = historical_price_data['20d_ma'] + (historical_price_data['20d_std'] * 2)
+historical_price_data['lower_band'] = historical_price_data['20d_ma'] - (historical_price_data['20d_std'] * 2)
 
 # Simulation of buying and selling
 for i in range(len(historical_price_data)):
