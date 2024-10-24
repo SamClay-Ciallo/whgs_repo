@@ -25,7 +25,8 @@ class RSI(Strategy):
         elif crossover(self.RSIlower, self.RSI14):
             self.buy()
 
-# Run the backtest
+# Run the backtesta
 bt = Backtest(data, RSI, cash=10_000)
 stats = bt.run()
-bt.plot()
+print(stats)
+#bt.plot()
