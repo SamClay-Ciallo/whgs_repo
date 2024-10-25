@@ -3,7 +3,20 @@ import pandas as pd
 import yfinance as yf
 import pandas_ta as ta
 from backtesting.lib import crossover
-from backtesting.test import GOOG
+
+# Function to collect stock price data
+def stock_price_collecting(code, datestart, dateend, period):
+    data = yf.Ticker(code)
+    prices = data.history(start=datestart, end=dateend, interval=period)
+    return prices
+
+# Collect historical price data
+data = stock_price_collecting("BTC-USD" , "2020-01-01", "2024-10-20", "1d")
+data = pd.DataFrame(data)
+
+def bbindicator(data):
+    bbans = ta.bbands(close=data.Close.s,std = 2, length=30)
+    return bbans.to_numpy().T[:3]
 
 class RSI(Strategy):
     RSIupper = 70
@@ -16,8 +29,23 @@ class RSI(Strategy):
         if crossover(self.RSI14,self.RSIupper):
             self.position.close()
         elif crossover(self.RSIlower,self.RSI14):
-            self.buy()
+            self.buy(size=0.5)
 
-bt = Backtest(GOOG,RSI,cash=10_000)
+class BBstrategy(Strategy):
+    def init(self):
+        self.bbans = self.I(bbindicator,self.data)
+    def next(self):
+        lowerBand = self.bbans[0]
+        upperBand = self.bbans[1]
+
+        if self.position:
+            if self.data.Close[-1] > upperBand[-1]:
+                self.position.close()
+        else:
+            if self.data.Close[-1] < lowerBand[-1]:
+                self.buy(size=0.5)
+
+bt = Backtest(data,RSI,cash=100_000)
 stat = bt.run()
 print(stat)
+bt.plot()
