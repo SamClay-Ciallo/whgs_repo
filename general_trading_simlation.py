@@ -37,7 +37,8 @@ T_value = cash + (shareNUm * current_price)
 def buy(amount):
     global cash, shareNUm
     if amount == "max" and cash >= ((cash // current_price) * current_price):  # Buy all shares you can afford
-        print("Buy Action(ALL) - " + str(historical_price_data.index[dayCounter])) 
+        print("")
+        print("Buy Action(ALL) - " + str(historical_price_data.index[dayCounter]) + " at price " + str(current_price)) 
         trading_number_of_share = (cash // current_price)
         shareNUm += (cash // current_price)
         cash -= (trading_number_of_share * current_price)
@@ -47,7 +48,8 @@ def buy(amount):
         print("Portfolio Value : "+ str(T_value))
         print("---------------------------------------------") 
     elif isinstance(amount, (int, float)) and cash >= (amount * current_price):  # Buy specified amount
-        print("Buy Action(CUS) - " + str(historical_price_data.index[dayCounter])) 
+        print("")
+        print("Buy Action(CUS) - " + str(historical_price_data.index[dayCounter]) + " at price " + str(current_price)) 
         shareNUm += amount 
         cash -= (amount * current_price)
         print("Trading Summary------Trading Summary------ " )
@@ -61,7 +63,8 @@ def buy(amount):
 def sell(amount):
     global cash, shareNUm
     if amount == "max" and shareNUm > 0:
-        print("Sell Action(ALL) - " + str(historical_price_data.index[dayCounter])) 
+        print("")
+        print("Sell Action(ALL) - " + str(historical_price_data.index[dayCounter]) + " at price " + str(current_price)) 
         cash += (shareNUm * current_price)
         shareNUm = 0
         print("Trading Summary------Trading Summary------ " )
@@ -70,7 +73,8 @@ def sell(amount):
         print("Portfolio Value : "+ str(T_value))
         print("---------------------------------------------") 
     elif isinstance(amount, (int, float)) and shareNUm >= amount:
-        print("Sell Action(CUS) - " + str(historical_price_data.index[dayCounter])) 
+        
+        print("Sell Action(CUS) - " + str(historical_price_data.index[dayCounter]) + " at price " + str(current_price)) 
         cash += (amount * current_price)
         shareNUm -= amount
         print("Trading Summary------Trading Summary------ " )
