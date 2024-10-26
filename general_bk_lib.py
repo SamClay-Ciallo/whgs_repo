@@ -3,6 +3,7 @@ import pandas as pd
 import yfinance as yf
 import pandas_ta as ta
 from backtesting.lib import crossover
+from backtesting.test import SMA
 
 # Function to collect stock price data
 def stock_price_collecting(code, datestart, dateend, period):
@@ -11,7 +12,7 @@ def stock_price_collecting(code, datestart, dateend, period):
     return prices
 
 # Collect historical price data
-data = stock_price_collecting("BILI" , "2015-01-01", "2024-10-20", "1d")
+data = stock_price_collecting("AAPL" , "2020-01-01", "2024-10-20", "1d")
 data = pd.DataFrame(data)
 
 def bbindicator(data):
@@ -45,33 +46,41 @@ class BBstrategy(Strategy):
             if self.data.Close[-1] < lowerBand[-1]:
                 self.buy(size=0.5)
 
-class RIS_BBstrategy(Strategy):
-    RSIupper = 75
-    RSIlower = 25
+class BollingerPlus(Strategy):
+    RSIupper = 70
+    RSIlower = 28
     RSIWin = 13
+    mawindowS = 15
+    mawindowL = 100
 
     def init(self):
         self.bbans = self.I(bbindicator,self.data)
         self.RSI14 = self.I(ta.rsi,pd.Series(self.data.Close),self.RSIWin)
+        self.smaS = self.I(SMA,self.data.Close,self.mawindowS)
+        self.smaL = self.I(SMA,self.data.Close,self.mawindowL)
     def next(self):
         lowerBand = self.bbans[0]
-        upperBand = self.bbans[2]
+        upperBand = self.bbans[1]
 
         if self.position:
-            if self.data.Close[-1] > upperBand[-1]:
+            if self.data.High[-1] > upperBand[-1]:
                 self.position.close()
         else:
-            if self.data.Close[-1] < lowerBand[-1] and crossover(self.RSIlower,self.RSI14):
+            if self.data.Low[-1] < lowerBand[-1] and (self.smaS[-1] > self.bbans[1] and self.smaS[-1] > self.smaL[-1]):
                 self.buy(size=0.5)
 
-class MovingAveragePro(Strategy):
+class whatEverStrategy(Strategy):
     def init(self):
         pass
     def next(self):
-        pass
-    
+        if self.position:
+            if self.data.Close[-1] < self.data.Close[-2]:
+                self.position.close()
+        else:
+            if self.data.Close[-1] > self.data.Close[-2]:
+                self.buy()
 
-bt = Backtest(data,RIS_BBstrategy,cash=100_000)
+bt = Backtest(data,BollingerPlus,cash=100_000)
 stat = bt.run()
 print(stat)
 bt.plot()
