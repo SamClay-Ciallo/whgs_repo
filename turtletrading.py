@@ -12,7 +12,7 @@ def stock_price_collecting(code, datestart, dateend, period):
     return prices
 
 # Collect historical price data
-stockdata = stock_price_collecting("BILI" , "2019-01-01", "2024-10-20", "1d")
+stockdata = stock_price_collecting("GE" , "2020-01-01", "2024-1-1", "1d")
 stockdata = pd.DataFrame(stockdata)
 
 def Dochian(data, high_length, low_length):
@@ -31,9 +31,9 @@ class turtleTrading(Strategy):
     # Define the two MA lags as *class variables*
     
     def init(self):
-        print(ATR(self.data, 20))
+        #print(ATR(self.data, 20))
         self.atr = self.I(ATR, self.data, 20)
-        self.donchian = self.I(Dochian, self.data, 150, 10)
+        self.donchian = self.I(Dochian, self.data, 20, 10)
         self.last_buy_price = 0
         self.last_buy_atr = 0
     def next(self):
@@ -48,7 +48,7 @@ class turtleTrading(Strategy):
             if self.donchian[0] == self.data.Low:
                 self.position.close()
         # If price decreases by 1.5 times ATR from the last buy point, sell all (stop loss)
-            if self.data.Low[-1] < (self.last_buy_price - 2 * self.last_buy_atr):
+            if self.data.Low[-1] < (self.last_buy_price - 1 * self.last_buy_atr):
                 self.position.close()
 
 bt = Backtest(stockdata,turtleTrading, cash=100_000)
